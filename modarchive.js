@@ -28,7 +28,7 @@
 	key: 'ehxucyfr-axtvmksx-n5brgkjh-yst3idjm',
 	request: req,
 	page: page
-      }, args], null, {debug: true});
+      }, args]);
     return new XML(doc.toString());
   }
 
