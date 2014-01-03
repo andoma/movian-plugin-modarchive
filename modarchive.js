@@ -42,7 +42,7 @@
       artist = mod.artist_info.guessed_artist[0].alias
 
     page.appendItem(mod.url, 'audio', {
-      title: mod.songtitle,
+      title: showtime.entityDecode(mod.songtitle),
       artist: artist
     });
   }
