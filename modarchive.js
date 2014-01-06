@@ -42,7 +42,7 @@
       artist = mod.artist_info.guessed_artist[0].alias
 
     page.appendItem(mod.url, 'audio', {
-      title: showtime.entityDecode(mod.songtitle),
+      title: showtime.entityDecode(mod.songtitle.toString().replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g,'').replace(/\s+/g,' ').length ? mod.songtitle : mod.filename),
       artist: artist
     });
   }
