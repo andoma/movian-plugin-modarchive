@@ -23,7 +23,7 @@
 		       plugin.path + 'logo.png');
 
   function tma_req(req, page, args) {
-    var doc = showtime.httpGet('http://modarchive.org/data/xml-tools.php', [
+    var doc = showtime.httpGet('http://api.modarchive.org/xml-tools.php', [
       {
 	key: 'ehxucyfr-axtvmksx-n5brgkjh-yst3idjm',
 	request: req,
