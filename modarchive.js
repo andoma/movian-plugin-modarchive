@@ -141,7 +141,6 @@ var XML = require('showtime/xml');
     var doc = tma_req('search_artist', null, {
       query: query
     }).modarchive;
-    doc.dump();
 
     page.entries = len;
     var len = doc.items.length;
