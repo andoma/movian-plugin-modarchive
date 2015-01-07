@@ -17,6 +17,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+var XML = require('showtime/xml');
+
 (function(plugin) {
 
   plugin.createService("The Mod Archive", "modarchive:start", "music", true,
@@ -29,20 +31,28 @@
 	request: req,
 	page: page
       }, args]);
-    return new XML(doc.toString());
+    return XML.parse(doc);
   }
 
  
   function appendMod(page, mod) {
-    var a = mod.artist_info.artist[0];
     var artist = null;
-    if(a)
-      artist = new showtime.Link(a.alias, 'modarchive:artist:' + a.id);
-    else if(mod.artist_info.guessed_artist[0])
-      artist = mod.artist_info.guessed_artist[0].alias
+
+    if(mod.artist_info.artist)
+      artist = mod.artist_info.artist.alias;
+    else if(mod.artist_info.guessed_artist)
+      artist = mod.artist_info.guessed_artist.alias
+
+    var title = mod.filename;
+
+    if(mod.songtitle) {
+      var tmp = mod.songtitle.toString();
+      if(tmp.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g,'').replace(/\s+/g,' ').length)
+        title = mod.songtitle;
+    }
 
     page.appendItem(mod.url, 'audio', {
-      title: showtime.entityDecode(mod.songtitle.toString().replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g,'').replace(/\s+/g,' ').length ? mod.songtitle : mod.filename),
+      title: title,
       artist: artist
     });
   }
@@ -52,8 +62,8 @@
     var mods = 0;
 
     function loader() {
-      var doc = tma_req(req, current_page, args);
-      if(current_page == 1 && doc.error.length > 0) {
+      var doc = tma_req(req, current_page, args).modarchive;
+      if(current_page == 1 && doc.error) {
 	page.error(doc.error);
 	return false;
       }
@@ -61,8 +71,10 @@
       mods += doc.results;
       page.entries = mods;
 
-      for each (var m in doc.module)
-      	appendMod(page, m);
+      var modules = doc.filterNodes('module');
+      var modules_length = modules.length;
+      for (var i = 0; i < modules_length; i++)
+      	appendMod(page, modules[i]);
 
       current_page++;
       return current_page <= doc.totalpages;
@@ -87,21 +99,19 @@
     });
   });
 
-  plugin.addURI("modarchive:random", function(page) {
-    page.metadata.title = "Random track from The Mod Archive";
-    page.type = "directory";
-    var v = tma_req('random');
-    page.appendItem(v.module.url, 'audio', trackmeta(v.module));
-    page.loading = false;
-  });
-
   plugin.addURI("modarchive:start", function(page) {
-    var doc = tma_req('view_genres');
-    for each (var p in doc.parent) {
+    var doc = tma_req('view_genres').modarchive;
+
+    var parents = doc.filterNodes('parent');
+    var len1 = parents.length;
+    for (var i = 0 ; i < len1; i++) {
+      var p = parents[i];
       page.appendItem(null, "separator", {
 	title: p.text
       });
-      for each (var c in p.children.child) {
+      var len2 = p.children.length;
+      for (var j = 0; j < len2; j++) {
+        var c = p.children[j];
 	page.appendItem("modarchive:genre:" + c.id, "directory", {
 	  title: c.text,
 	  entries: c.files
@@ -130,16 +140,18 @@
   plugin.addSearcher("The Mod Archive - Artists", null, function(page, query) {
     var doc = tma_req('search_artist', null, {
       query: query
-    });
-    var entries = 0;
-    for each (var a in doc.items.item) {
-      entries++;
+    }).modarchive;
+    doc.dump();
+
+    page.entries = len;
+    var len = doc.items.length;
+    for (var i = 0; i < len; i++) {
+      var a = doc.items[i];
       page.appendItem('modarchive:artist:' + a.id, 'artist', {
 	title: a.alias,
 	icon: a.imageurl_thumb
       });
     }
-    page.entries = entries;
   });
 
 })(this);
