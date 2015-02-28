@@ -142,6 +142,9 @@ var XML = require('showtime/xml');
       query: query
     }).modarchive;
 
+    if(doc.error)
+      return;
+
     page.entries = len;
     var len = doc.items.length;
     for (var i = 0; i < len; i++) {
