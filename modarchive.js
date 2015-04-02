@@ -142,11 +142,12 @@ var XML = require('showtime/xml');
       query: query
     }).modarchive;
 
+    doc.dump();
     if(doc.error)
       return;
 
-    page.entries = len;
     var len = doc.items.length;
+    page.entries = len;
     for (var i = 0; i < len; i++) {
       var a = doc.items[i];
       page.appendItem('modarchive:artist:' + a.id, 'artist', {
