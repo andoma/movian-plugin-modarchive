@@ -1,7 +1,7 @@
 /**
- *  Mod archive plugin for Showtime
+ *  Mod archive plugin for Movian Media Center
  *
- *  (c) Andreas Öman 2012
+ *  (c) 2012-2015 Andreas Öman
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ var XML = require('showtime/xml');
     }
 
     page.appendItem(mod.url, 'audio', {
-      title: title,
+      title: showtime.entityDecode(title).trim(),
       artist: artist
     });
   }
@@ -86,20 +86,27 @@ var XML = require('showtime/xml');
 
   }
 
-  plugin.addURI("modarchive:artist:([0-9]*)", function(page, id) {
+  plugin.addURI("modarchive:artist:([0-9]*):(.*)", function(page, id, title) {
+    page.metadata.title = unescape(title);
+    page.loading = true;
     requestContents(page, 'view_modules_by_artistid', {
       query: id
     });
+    page.loading = false;
   });
 
-  plugin.addURI("modarchive:genre:([0-9]*)", function(page, id) {
+  plugin.addURI("modarchive:genre:([0-9]*):(.*)", function(page, id, title) {
+    page.metadata.title = unescape(title);
+    page.loading = true;
     requestContents(page, 'search', {
       type: 'genre',
       query: id
     });
+    page.loading = false;
   });
 
   plugin.addURI("modarchive:start", function(page) {
+    page.loading = true;
     var doc = tma_req('view_genres').modarchive;
 
     var parents = doc.filterNodes('parent');
@@ -112,7 +119,7 @@ var XML = require('showtime/xml');
       var len2 = p.children.length;
       for (var j = 0; j < len2; j++) {
         var c = p.children[j];
-	page.appendItem("modarchive:genre:" + c.id, "directory", {
+	page.appendItem("modarchive:genre:" + c.id + ':' + escape(c.text), "directory", {
 	  title: c.text,
 	  entries: c.files
 	});
@@ -150,7 +157,7 @@ var XML = require('showtime/xml');
     page.entries = len;
     for (var i = 0; i < len; i++) {
       var a = doc.items[i];
-      page.appendItem('modarchive:artist:' + a.id, 'artist', {
+      page.appendItem('modarchive:artist:' + a.id + ':' + escape(a.alias), 'artist', {
 	title: a.alias,
 	icon: a.imageurl_thumb
       });
