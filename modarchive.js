@@ -128,9 +128,6 @@ var XML = require('showtime/xml');
 
     page.metadata.title = "The Mod Archive";
     page.type = "directory";
-
-    page.metadata.background = plugin.path + "protracker.png";
-    page.metadata.backgroundAlpha = 0.2;
     page.loading = false;
   });
 
